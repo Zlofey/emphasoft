@@ -1,28 +1,21 @@
 from django.contrib.auth.models import User
-from rest_framework import  permissions
+from rest_framework import permissions
 from rest_framework.viewsets import ModelViewSet
-from api.serializers import ReadOnlyUserSerializerSerializer, WriteOnlyUserSerializerSerializer
+from api.serializers import UserSerializer
+from api.permissions import IsSelfOrAdmin, ReadOnly
 
 
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = ReadOnlyUserSerializerSerializer
+    serializer_class = UserSerializer
 
     def get_permissions(self):
-        if self.request.method in ['PUT', 'DELETE']:
+        # only super user can create
+        if self.action == 'create':
             return [permissions.IsAdminUser()]
-        return [permissions.IsAuthenticated()]
 
+        # super user or owner of profile can destroy   update   partial_update
+        if self.action in ('destroy', 'update', 'partial_update'):
+            return [IsSelfOrAdmin()]
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return WriteOnlyUserSerializerSerializer
-
-        elif self.request.method == 'PUT':
-            return WriteOnlyUserSerializerSerializer
-
-        elif self.request.method == 'PATCH':
-            return WriteOnlyUserSerializerSerializer
-
-        elif self.request.method == 'GET':
-            return ReadOnlyUserSerializerSerializer
+        return [ReadOnly()]
