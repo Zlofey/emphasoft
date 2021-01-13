@@ -20,26 +20,11 @@ class UserSerializer(serializers.ModelSerializer):
             'id': {'required': False, 'read_only': True}
         }
 
-    def create(self, validated_data, partial=True):
-        user = User(
-            username=validated_data['username'],
-            is_active=validated_data['is_active'],
-
-            first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', ''),
-        )
-        user.set_password(validated_data['password'])
-        user.save()
-        return user
-
-    def update(self, instance, validated_data, partial=True):
-        instance.username = validated_data.get('username', instance.username)
-        instance.is_active = validated_data.get('is_active', instance.is_active)
-
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
-
-        instance.set_password(validated_data.get('password', instance.password))
-        instance.save()
+    def save(self, **kwargs):
+        instance = super().save(**kwargs)
+        if instance and 'password' in self.validated_data:
+            instance.set_password(self.validated_data['password'])
+            instance.save()
+            self.validated_data['password'] = instance.password
         return instance
 
