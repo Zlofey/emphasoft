@@ -27,4 +27,4 @@ class UserSerializer(serializers.ModelSerializer):
             instance.save()
             self.validated_data['password'] = instance.password
         return instance
-
+#testing git
