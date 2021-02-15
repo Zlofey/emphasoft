@@ -19,3 +19,6 @@ class UserViewSet(ModelViewSet):
             return [IsSelfOrAdmin()]
 
         return [ReadOnly()]
+
+    def HW(self):
+        return 'hello world!'
